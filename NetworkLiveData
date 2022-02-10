@@ -1,0 +1,83 @@
+package com.example.livedataexample.utils
+
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.util.Log
+import androidx.lifecycle.LiveData
+
+/**
+ * This class is used to update status of internet connection to observer
+ */
+class NetworkLiveData(applicationContext: Context,networkRequest:NetworkRequest) : LiveData<Boolean>() {
+
+    /**
+     * for debugging purpose
+     */
+    private  val TAG: String = NetworkLiveData::class.java.simpleName
+
+
+    /**
+     * ConnectivityManger System service instance 
+     */
+    private val connectivityManager =
+        applicationContext.getSystemService(ConnectivityManager::class.java)
+
+    /**
+     * flag to maintain connection status
+     */
+    private var isConnectedToInternet = false
+
+
+    /**
+     * To track information related to  network state 
+     */
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            Log.d(TAG, "onAvailable network $network")
+        }
+
+        override fun onCapabilitiesChanged(
+            network: Network,
+            networkCapabilities: NetworkCapabilities
+        ) {
+            super.onCapabilitiesChanged(network, networkCapabilities)
+            val hasCellular =
+                networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+            val hasWifi = networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+            val hasInternet =
+                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            Log.d(
+                TAG,
+                "onCapabilities Changed hasCellular $hasCellular , hasWifi $hasWifi , hasInternet $hasInternet "
+            )
+            isConnectedToInternet = hasCellular || hasInternet || hasWifi
+            postValue(isConnectedToInternet)
+        }
+
+        override fun onLost(network: Network) {
+            super.onLost(network)
+            Log.d(TAG, "lost network called")
+            isConnectedToInternet = false
+            postValue(isConnectedToInternet)
+        }
+    }
+
+    init {
+        connectivityManager.requestNetwork(networkRequest, networkCallback)
+    }
+
+    override fun onActive() {
+        super.onActive()
+        Log.d(TAG, "onActive called")
+        postValue(isConnectedToInternet)
+    }
+
+    override fun onInactive() {
+        super.onInactive()
+        Log.d(TAG, "onInActive called")
+    }
+}

@@ -12,7 +12,7 @@ Usage :
     /**
      * Network request
      */
-    private val networkRequest = NetworkRequest.Builder()
+    private val mNetworkRequest = NetworkRequest.Builder()
         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
@@ -21,7 +21,7 @@ Usage :
     /**
      * live data instance
      */
-    private val mNetworkState: NetworkLiveData = NetworkLiveData(applicationContext,networkRequest)
+    private val mNetworkState: NetworkLiveData = NetworkLiveData(applicationContext,mNetworkRequest)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
